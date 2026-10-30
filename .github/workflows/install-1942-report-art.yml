@@ -1,0 +1,86 @@
+name: Install 1942 Report ASCII-art font and distress map
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/install-1942-report-art.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Download font and update ASCII art
+        shell: python
+        run: |
+          import html, io, re, zipfile
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urljoin, urlparse
+          from urllib.request import Request, urlopen
+          source = 'https://www.1001fonts.com/1942-report-font.html'
+          def fetch(url):
+              with urlopen(Request(url, headers={'User-Agent': 'Mozilla/5.0 Watershallow font installer'}), timeout=60) as response:
+                  data = response.read(10_000_001)
+              if len(data) > 10_000_000:
+                  raise RuntimeError('Download exceeds size limit')
+              return data
+          class Links(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.urls = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == 'a':
+                      url = urljoin(source, html.unescape(dict(attrs).get('href', '')))
+                      if urlparse(url).hostname == 'dl.1001fonts.com':
+                          self.urls.append(url)
+          links = Links()
+          links.feed(fetch(source).decode('utf-8', errors='replace'))
+          if not links.urls:
+              raise RuntimeError('No 1001 Fonts archive link found; no files changed')
+          archive = zipfile.ZipFile(io.BytesIO(fetch(links.urls[0])))
+          candidates = [x for x in archive.infolist() if not x.is_dir() and Path(x.filename).suffix.lower() == '.ttf' and x.file_size < 5_000_000]
+          if len(candidates) != 1:
+              raise RuntimeError('Expected exactly one TTF')
+          font = archive.read(candidates[0])
+          if font[:4] not in (b'\x00\x01\x00\x00', b'OTTO', b'true'):
+              raise RuntimeError('Invalid font signature')
+          page = Path('index.html')
+          content = page.read_text(encoding='utf-8')
+          if '</head>' not in content:
+              raise RuntimeError('Page head not found')
+          css = "@font-face{font-family:'1942Report';src:url('./fonts/1942-report/1942-report.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}\n#terrain,.building-art,.sidebar-art,.compass{font-family:'1942Report','Courier New',monospace!important;font-weight:400!important;font-synthesis:none}\n"
+          content = re.sub(r'<style id="ascii-art-font">.*?</style>', '', content, flags=re.S)
+          content = content.replace('</head>', '<style id="ascii-art-font">' + css + '</style></head>', 1)
+          page.write_text(content, encoding='utf-8')
+          script = Path('watershallow.js')
+          code = script.read_text(encoding='utf-8')
+          sea = '<div class="sea-name" aria-hidden="true">~ SHALLOW SEA ~<br>🌊 ⛵ 🌊<br>🌊 🌊 🐟<br>⚓ 🌊 🌊<br>🌊 🚢 🌊</div>'
+          replacement = '<div class="sea-name" aria-hidden="true">~ SHALLOW SEA ~<br> ⛵ <br>  🐟<br>⚓  <br> 🚢 </div>'
+          if sea not in code:
+              raise RuntimeError('Expected sea emoji block not found')
+          code = code.replace(sea, replacement, 1)
+          old = "chars[y][x]=sea?' ~~~  ~  ~ '[((x*3+y*5)%11)]:forest?' ^ A ^ | '[((x+y*3)%9)]:road?(Math.abs(v-.76)<.012?'=':'.'):' /\\__|[]_ '[(x%11+y%6)%11]||' '"
+          new = "chars[y][x]=sea?' ~~~  ~  ~ '[((x*3+y*5)%11)]:forest?' ^ A ^ | '[((x+y*3)%9)]:road?(Math.abs(v-.76)<.012?'=-~=-.=-~='[((x*7+y*3)%12)]:' .-~.-~. '[((x*5+y*7)%11)]):' /\\__|[]_ '[(x%11+y%6)%11]||' '"
+          if old not in code:
+              raise RuntimeError('Expected road renderer not found')
+          code = code.replace(old, new, 1)
+          script.write_text(code, encoding='utf-8')
+          target = Path('fonts/1942-report')
+          target.mkdir(parents=True, exist_ok=True)
+          (target / '1942-report.ttf').write_bytes(font)
+          notices = [x for x in archive.infolist() if not x.is_dir() and x.file_size < 200_000 and (Path(x.filename).suffix.lower() in ('.txt', '.md') or Path(x.filename).name.lower() in ('ofl', 'license', 'licence', 'copying'))]
+          for i, notice in enumerate(notices):
+              (target / ('upstream-' + str(i) + '-' + Path(notice.filename).name)).write_bytes(archive.read(notice))
+          (target / 'SOURCE.md').write_text('1942 report by Johan Holmdahl.\nSource: ' + source + '\n1001 Fonts lists the font as free for personal and commercial use, with custom terms in the archive. Preserve upstream notices. The game MIT licence does not relicense this font. This source note is not a substitute for font licence terms.\n', encoding='utf-8')
+      - name: Commit map and font changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add fonts/1942-report index.html watershallow.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Use 1942 Report art, remove sea emoji, distress roads'
+          git push origin HEAD:main
