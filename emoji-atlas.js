@@ -25,7 +25,7 @@
     let out='',seed=73019;
     const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
     const put=(x,y,e,c='')=>{out+=`<span class="${c}" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%">${e}</span>`};
-    for(let i=0;i<145;i++){const y=3+rnd()*94,x=1+rnd()*(17+3*Math.sin(y/12));put(x,y,i%17===0?'🐟':i%29===0?'🐚':'~','wave')}
+    for(let i=0;i<45;i++){const y=3+rnd()*94,x=1+rnd()*(17+3*Math.sin(y/12));put(x,y,i%17===0?'🐟':i%29===0?'🐚':'~','wave')}
     [[7,18,'⛵'],[13,43,'🚢'],[5,69,'⛵'],[17,79,'⚓'],[12,89,'🛶']].forEach(a=>put(...a));
     for(let i=0;i<85;i++){let x,y;if(i<60){x=24+rnd()*74;y=1+rnd()*5}else{x=96+rnd()*3;y=6+rnd()*75}put(x,y,i%5===0?'🌳':'🌲')}
     const near=(x,y)=>Object.values(POS).some(([a,b])=>Math.abs(x-a)<12&&y>b-7&&y<b+15);
@@ -47,7 +47,7 @@
     const cols=Math.ceil(world.clientWidth/3.62),rows=Math.ceil(world.clientHeight/7);if(!cols||!rows)return;
     let out='';
     for(let y=0;y<rows;y++){let run='',last='';
-      for(let x=0;x<cols;x++){const u=x/cols,v=y/rows,sea=u<.205+.025*Math.sin(v*14)||v>.965,forest=!sea&&(v<.075||u>.955),kind=sea?'water':forest?'forest':'town',pattern=sea?' ~   ~~~   ':forest?' ^ A ^ | ':' /\\__|[]_ ';
+      for(let x=0;x<cols;x++){const u=x/cols,v=y/rows,sea=u<.205+.025*Math.sin(v*14)||v>.965,forest=!sea&&(v<.075||u>.955),kind=sea?'water':forest?'forest':'town',pattern=sea?' ~                     ':forest?' ^ A ^ | ':' /\\__|[]_ ';
         if(kind!==last){if(run)out+=`<span class="${last}">${esc(run)}</span>`;run='';last=kind}run+=pattern[(x*3+y*5)%pattern.length];
       }out+=`<span class="${last}">${esc(run)}</span>\n`;
     }el.style.fontSize='6px';el.style.lineHeight='7px';el.innerHTML=out;
