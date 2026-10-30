@@ -1,0 +1,48 @@
+name: Install combat and map polish
+on:
+  push:
+    branches: [main]
+    paths: ['combat.js', 'presentation-polish.js', '.github/workflows/install-combat.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Validate extensions
+        run: |
+          node --check combat.js
+          node --check presentation-polish.js
+      - name: Install extensions and patch active scenery
+        shell: python
+        run: |
+          from pathlib import Path
+          atlas=Path('emoji-atlas.js')
+          text=atlas.read_text(encoding='utf-8')
+          text=text.replace("'🌊'","'~'")
+          text=text.replace('stroke-width:1.1;','stroke-width:1.1;stroke-dasharray:1.8 .45 .6 .3 2.1 .6;opacity:.75;')
+          text=text.replace('stroke-width:.65;','stroke-width:.65;stroke-dasharray:2.3 .3 .7 .4 1.4 .5;opacity:.85;')
+          atlas.write_text(text,encoding='utf-8')
+          page=Path('index.html')
+          text=page.read_text(encoding='utf-8')
+          if '</body>' not in text: raise RuntimeError('Missing body end')
+          additions=''
+          for name in ['combat.js','presentation-polish.js']:
+              tag='<script src="'+name+'"></script>'
+              if tag not in text: additions+=tag
+          text=text.replace('</body>',additions+'</body>',1)
+          page.write_text(text,encoding='utf-8')
+      - name: Validate atlas
+        run: node --check emoji-atlas.js
+      - name: Commit installation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html emoji-atlas.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Load combat and polish active atlas typography and scenery'
+          git push origin HEAD:main
