@@ -1,0 +1,54 @@
+name: Validate repository
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript and local assets
+        shell: python
+        run: |
+          import re, subprocess, tempfile
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from urllib.parse import urlsplit, unquote
+          root=Path.cwd()
+          scripts=[p for p in root.rglob('*.js') if '.git' not in p.parts]
+          for path in scripts:
+              subprocess.run(['node','--check',str(path)],check=True)
+          class Assets(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.urls=[]
+              def handle_starttag(self,tag,attrs):
+                  a=dict(attrs)
+                  if tag=='script' and a.get('src'): self.urls.append(a['src'])
+                  if tag=='link' and a.get('href') and 'stylesheet' in a.get('rel',''): self.urls.append(a['href'])
+          text=(root/'index.html').read_text(encoding='utf-8')
+          parser=Assets()
+          parser.feed(text)
+          urls=parser.urls+re.findall(r'''url\(\s*['"]?([^'"\)\s]+)''',text)
+          for css in root.rglob('*.css'):
+              for url in re.findall(r'''url\(\s*['"]?([^'"\)\s]+)''',css.read_text(encoding='utf-8')):
+                  if not urlsplit(url).scheme and not url.startswith('//'):
+                      assert (css.parent/unquote(urlsplit(url).path)).is_file(), 'Missing CSS asset: '+url
+          for url in urls:
+              if not urlsplit(url).scheme and not url.startswith('//'):
+                  assert (root/unquote(urlsplit(url).path)).is_file(), 'Missing entry asset: '+url
+          inline=re.findall(r'<script\b([^>]*)>(.*?)</script>',text,re.S|re.I)
+          for attrs,body in inline:
+              if re.search(r'\bsrc\s*=',attrs,re.I) or not body.strip(): continue
+              with tempfile.TemporaryDirectory() as folder:
+                  path=Path(folder)/'inline.js'
+                  path.write_text(body,encoding='utf-8')
+                  subprocess.run(['node','--check',str(path)],check=True)
+          print(f'Checked {len(scripts)} JavaScript files and {len(urls)} entry asset references')
