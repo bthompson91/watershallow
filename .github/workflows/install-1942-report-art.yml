@@ -58,16 +58,16 @@ jobs:
           page.write_text(content, encoding='utf-8')
           script = Path('watershallow.js')
           code = script.read_text(encoding='utf-8')
-          sea = '<div class="sea-name" aria-hidden="true">~ SHALLOW SEA ~<br>🌊 ⛵ 🌊<br>🌊 🌊 🐟<br>⚓ 🌊 🌊<br>🌊 🚢 🌊</div>'
-          replacement = '<div class="sea-name" aria-hidden="true">~ SHALLOW SEA ~<br> ⛵ <br>  🐟<br>⚓  <br> 🚢 </div>'
-          if sea not in code:
+          sea_pattern = r'<div class="sea-name"[^>]*>~ SHALLOW SEA ~.*?</div>'
+          sea_replacement = '<div class="sea-name" aria-hidden="true">~ SHALLOW SEA ~<br> ⛵ <br>  🐟<br>⚓  <br> 🚢 </div>'
+          code, sea_count = re.subn(sea_pattern, sea_replacement, code, count=1, flags=re.S)
+          if sea_count != 1:
               raise RuntimeError('Expected sea emoji block not found')
-          code = code.replace(sea, replacement, 1)
-          old = "chars[y][x]=sea?' ~~~  ~  ~ '[((x*3+y*5)%11)]:forest?' ^ A ^ | '[((x+y*3)%9)]:road?(Math.abs(v-.76)<.012?'=':'.'):' /\\__|[]_ '[(x%11+y%6)%11]||' '"
-          new = "chars[y][x]=sea?' ~~~  ~  ~ '[((x*3+y*5)%11)]:forest?' ^ A ^ | '[((x+y*3)%9)]:road?(Math.abs(v-.76)<.012?'=-~=-.=-~='[((x*7+y*3)%12)]:' .-~.-~. '[((x*5+y*7)%11)]):' /\\__|[]_ '[(x%11+y%6)%11]||' '"
-          if old not in code:
+          road_pattern = re.compile(r"chars\[y\]\[x\]=sea\?'[^']*'\[\(\(x\*3\+y\*5\)%11\)\]:forest\?'[^']*'\[\(\(x\+y\*3\)%9\)\]:road\?\(Math\.abs\(v-\.76\)<\.012\?'[^']*':'[^']*'\):'[^']*'\[\(x%11\+y%6\)%11\]\|\|' '")
+          road_replacement = r"chars[y][x]=sea?' ~~~  ~  ~ '[((x*3+y*5)%11)]:forest?' ^ A ^ | '[((x+y*3)%9)]:road?(Math.abs(v-.76)<.012?'=-~=-.=-~='[((x*7+y*3)%12)]:' .-~.-~. '[((x*5+y*7)%11)]):' /\\__|[]_ '[(x%11+y%6)%11]||' '"
+          code, road_count = road_pattern.subn(road_replacement, code, count=1)
+          if road_count != 1:
               raise RuntimeError('Expected road renderer not found')
-          code = code.replace(old, new, 1)
           script.write_text(code, encoding='utf-8')
           target = Path('fonts/1942-report')
           target.mkdir(parents=True, exist_ok=True)
