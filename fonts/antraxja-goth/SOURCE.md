@@ -1,0 +1,1 @@
+Antraxja Goth 1938 by Atrax. Source: https://www.dafont.com/antraxja-goth-1938.font. Preserve upstream notices; the game licence does not relicense this font.
