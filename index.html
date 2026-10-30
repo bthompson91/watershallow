@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kings of Watershallow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <pre class="ascii-title">
+ __  __ ___  ____  ___  ____    __  __  ___  ____  _____ _  _
+|  \/  |_ _|/ ___|/ _ \|  _ \  |  \/  |/ _ \|  _ \| ____| || |
+| |\/| || || |  _| | | | |_) | | |\/| | | | | |_) |  _| | || |_
+| |  | || || |_| | |_| |  _ <  | |  | | |_| |  _ <| |___|__   _|
+|_|  |_|___|\____|\___/|_| \_\ |_|  |_|\___/|_| \_\_____|  |_|  
+    </pre>
+    <p class="tagline">An original single-player worker-placement game for the browser.</p>
+  </header>
+
+  <main>
+    <section id="setup" class="panel">
+      <h2>New Voyage</h2>
+      <label>Player name <input id="player-name" value="Captain" maxlength="24"></label>
+      <label>AI opponents
+        <select id="ai-count">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+        </select>
+      </label>
+      <button id="start-game">Begin</button>
+      <button id="continue-game" class="secondary hidden">Continue saved voyage</button>
+    </section>
+
+    <section id="game" class="hidden">
+      <div id="status-bar"></div>
+      <div class="layout">
+        <section class="panel">
+          <h2>Watershallow</h2>
+          <div id="locations"></div>
+        </section>
+        <section class="panel">
+          <h2>Your Harbour</h2>
+          <div id="player-area"></div>
+          <h2>Commissions</h2>
+          <div id="quests"></div>
+          <h2>Orders</h2>
+          <div id="intrigue"></div>
+        </section>
+      </div>
+      <div id="log" class="panel"></div>
+      <div class="controls">
+        <button id="save-game">Save</button>
+        <button id="new-game" class="danger">Abandon voyage</button>
+      </div>
+    </section>
+
+    <section id="game-over" class="panel hidden">
+      <h2>Voyage Complete</h2>
+      <div id="final-scores"></div>
+      <button id="play-again">New voyage</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>Original open-source game • MIT License • No external dependencies</p>
+  </footer>
+  <script src="game.js"></script>
+</body>
+</html>
