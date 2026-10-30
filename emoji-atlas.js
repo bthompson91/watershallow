@@ -13,8 +13,8 @@
     .sea-name,.treeline{display:none}.scenery,.roads,.map-caption{position:absolute;inset:0;pointer-events:none;user-select:none}
     .scenery{z-index:0;overflow:hidden}.scenery span{position:absolute;transform:translate(-50%,-50%);font-size:clamp(13px,2.6cqh,27px);line-height:1;filter:saturate(.85)}
     .scenery span.wave{opacity:.68;font-size:clamp(14px,3.1cqh,32px)}.scenery span.house{font-size:clamp(11px,2.1cqh,23px)}
-    .roads{width:100%;height:100%;z-index:0}.roads .road-edge{fill:none;stroke:#a48858;stroke-width:1.1;stroke-dasharray:1.8 .45 .6 .3 2.1 .6;opacity:.75;stroke-linecap:round;stroke-linejoin:round}
-    .roads .road-fill{fill:none;stroke:#f5e6b8;stroke-width:.65;stroke-dasharray:2.3 .3 .7 .4 1.4 .5;opacity:.85;stroke-linecap:round;stroke-linejoin:round}
+    .roads{width:100%;height:100%;z-index:0}.roads .road-edge{fill:none;stroke:#a48858;stroke-width:1.1;stroke-dasharray:1.8 .45 .6 .3 2.1 .6;opacity:.75;stroke-dasharray:1.8 .45 .6 .3 2.1 .6;opacity:.75;stroke-linecap:round;stroke-linejoin:round}
+    .roads .road-fill{fill:none;stroke:#f5e6b8;stroke-width:.65;stroke-dasharray:2.3 .3 .7 .4 1.4 .5;opacity:.85;stroke-dasharray:2.3 .3 .7 .4 1.4 .5;opacity:.85;stroke-linecap:round;stroke-linejoin:round}
     .roads .dock{stroke:#775b37;stroke-width:.4;fill:none}.map-caption{inset:auto;z-index:1;font-size:clamp(9px,.7vw,13px);font-weight:bold;letter-spacing:1px;color:#244d61;text-shadow:0 1px #e8dfb1}
     .quay-title{top:84%;z-index:3}.quay{top:88%;z-index:3;background:#e4cda299}.plot{background:#efdab2ed}
     @media(min-width:1101px) and (max-height:650px){.landmark .building-art{display:none}.landmark-icon{font-size:19px}.landmark{max-height:24%}.quay-title{top:84%}.quay{top:88%}}
