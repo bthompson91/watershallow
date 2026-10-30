@@ -25,6 +25,11 @@ body button:focus-visible{outline:3px solid #176c84!important;outline-offset:2px
 .hand .commission-affordable>h2{color:#355023}
 .commission-badge{display:inline-block;font-size:10px;letter-spacing:.4px;padding:2px 4px;margin-left:4px;background:#496335;color:#fff4d6}
 @media(max-width:1100px){.hand{height:620px;min-height:0}}
+</style><style id="lt-cushion-font">@font-face{font-family:'LT Cushion';src:url('./fonts/lt-cushion/LTCushion-Medium.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'LT Cushion';src:url('./fonts/lt-cushion/LTCushion-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}
+html,body{font-family:'LT Cushion',Georgia,serif!important}
+button,input,select,.brand>span,.commission-badge{font-family:'LT Cushion',Georgia,serif!important}
+pre,#terrain,.building-art,.sidebar-art,.menu pre,.compass{font-family:'Courier New',monospace!important}
 </style></head><body><div id="app"></div><p id="storage" class="warn" role="status"></p><script src="watershallow.js"></script><script src="emoji-atlas.js"></script><script>
 /* Display-only changes: stable location IDs, rules and saves are unchanged. */
 LOC.forEach(location=>{location[1]=location[1].replace(/^\d+\s*·\s*/, '');});
@@ -64,4 +69,4 @@ render=function(){
   fitHands();
 };
 render();
-</script><script>if(document.fonts&&typeof fitHands==='function'){document.fonts.ready.then(fitHands);document.fonts.addEventListener('loadingdone',fitHands);}</script></body></html>
+</script><script>if(document.fonts&&typeof fitHands==='function'){document.fonts.ready.then(fitHands);document.fonts.addEventListener('loadingdone',fitHands);}</script><script data-lt-cushion-fit>if(document.fonts&&typeof fitHands==='function'){document.fonts.ready.then(fitHands);document.fonts.addEventListener('loadingdone',fitHands);}</script></body></html>
