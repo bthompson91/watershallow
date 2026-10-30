@@ -1,5 +1,9 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kings of Watershallow</title><link rel="stylesheet" href="atlas.css"><style>
+@font-face{font-family:'Subway';src:url('./fonts/subway/Subway-Black.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+h1,h2,h3,.brand,.quay-title,.map-caption{font-family:'Subway',Georgia,serif!important;font-weight:400!important;font-synthesis:none}
+.brand>span,.commission-badge{font-family:'Courier New',monospace}
+
 body button:not(:disabled){background:#493321!important;color:#fff4d6!important;border:1px solid #493321!important;border-bottom:2px solid #291c12!important;opacity:1;font-weight:bold}
 body button:not(:disabled):hover{background:#694b2d!important;color:#fffbea!important;outline:2px solid #b38646;outline-offset:1px}
 body button:disabled{background:#e6d9bc!important;color:#796d57!important;border:1px dashed #a8997c!important;opacity:1;font-weight:normal;cursor:not-allowed}
@@ -60,4 +64,4 @@ render=function(){
   fitHands();
 };
 render();
-</script></body></html>
+</script><script>if(document.fonts&&typeof fitHands==='function'){document.fonts.ready.then(fitHands);document.fonts.addEventListener('loadingdone',fitHands);}</script></body></html>
