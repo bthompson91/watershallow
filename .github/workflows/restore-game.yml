@@ -1,0 +1,42 @@
+name: Restore pre-overhaul game
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/restore-game.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Revert broken overhaul while preserving later changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git log --format=%B | grep -Fq 'This reverts commit 03974ccc8848a1f6d6b3e10f4ac837062f081925.'; then
+            echo 'Overhaul already reverted'
+          else
+            git revert --no-edit 03974ccc8848a1f6d6b3e10f4ac837062f081925
+            git push origin HEAD:main
+          fi
+      - name: Check restored JavaScript
+        run: node --check watershallow.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
