@@ -1,0 +1,80 @@
+name: Install LT Cushion body font
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/install-lt-cushion.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Download fonts and update body typography
+        shell: python
+        run: |
+          import html, io, re, zipfile
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urljoin, urlparse
+          from urllib.request import Request, urlopen
+          source = 'https://www.dafont.com/lt-cushion.font'
+          def fetch(url):
+              with urlopen(Request(url, headers={'User-Agent': 'Mozilla/5.0 Watershallow font installer'}), timeout=60) as response:
+                  data = response.read(10_000_001)
+              if len(data) > 10_000_000:
+                  raise RuntimeError('Download exceeds size limit')
+              return data
+          class Links(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.urls = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == 'a':
+                      url = urljoin(source, html.unescape(dict(attrs).get('href', '')))
+                      if urlparse(url).hostname == 'dl.dafont.com':
+                          self.urls.append(url)
+          links = Links()
+          links.feed(fetch(source).decode('utf-8', errors='replace'))
+          if not links.urls:
+              raise RuntimeError('No DaFont archive link found; no files changed')
+          archive = zipfile.ZipFile(io.BytesIO(fetch(links.urls[0])))
+          fonts = {}
+          for weight in ('Medium', 'Bold'):
+              expected = 'ltcushion' + weight.lower()
+              candidates = [x for x in archive.infolist() if re.sub('[^a-z]', '', Path(x.filename).stem.lower()) == expected and Path(x.filename).suffix.lower() == '.ttf']
+              if len(candidates) != 1 or candidates[0].file_size > 5_000_000:
+                  raise RuntimeError('Expected one valid ' + weight + ' font')
+              data = archive.read(candidates[0])
+              if data[:4] not in (b'\x00\x01\x00\x00', b'OTTO', b'true'):
+                  raise RuntimeError('Invalid font signature')
+              fonts[weight] = data
+          page = Path('index.html')
+          content = page.read_text(encoding='utf-8')
+          if '</head>' not in content:
+              raise RuntimeError('Page head not found')
+          css = "@font-face{font-family:'LT Cushion';src:url('./fonts/lt-cushion/LTCushion-Medium.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}\n@font-face{font-family:'LT Cushion';src:url('./fonts/lt-cushion/LTCushion-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}\nhtml,body{font-family:'LT Cushion',Georgia,serif!important}\nbutton,input,select,.brand>span,.commission-badge{font-family:'LT Cushion',Georgia,serif!important}\npre,#terrain,.building-art,.sidebar-art,.menu pre,.compass{font-family:'Courier New',monospace!important}\n"
+          content = re.sub(r'<style id="lt-cushion-font">.*?</style>', '', content, flags=re.S)
+          content = content.replace('</head>', '<style id="lt-cushion-font">' + css + '</style></head>', 1)
+          if 'data-lt-cushion-fit' not in content:
+              content = content.replace('</body>', "<script data-lt-cushion-fit>if(document.fonts&&typeof fitHands==='function'){document.fonts.ready.then(fitHands);document.fonts.addEventListener('loadingdone',fitHands);}</script></body>", 1)
+          target = Path('fonts/lt-cushion')
+          target.mkdir(parents=True, exist_ok=True)
+          for weight, data in fonts.items():
+              (target / ('LTCushion-' + weight + '.ttf')).write_bytes(data)
+          notices = [x for x in archive.infolist() if not x.is_dir() and x.file_size < 200_000 and (Path(x.filename).suffix.lower() in ('.txt', '.md') or Path(x.filename).name.lower() in ('ofl', 'license', 'licence', 'copying'))]
+          for i, notice in enumerate(notices):
+              (target / ('upstream-' + str(i) + '-' + Path(notice.filename).name)).write_bytes(archive.read(notice))
+          (target / 'SOURCE.md').write_text('LT Cushion by LyonsType.\nSource: ' + source + '\nDaFont labels this family 100% Free. Preserve upstream notices. The game MIT licence does not relicense these fonts. This source note is not a substitute for font licence terms.\n', encoding='utf-8')
+          page.write_text(content, encoding='utf-8')
+      - name: Commit font installation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add fonts/lt-cushion index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Install LT Cushion for non-heading text'
+          git push origin HEAD:main
