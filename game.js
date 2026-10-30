@@ -4,21 +4,21 @@ const SAVE_KEY = "kings-of-watershallow-save-v1";
 const ROUNDS = 8;
 
 const RESOURCE_ICONS = {
-  coin: "©",
-  supplies: "[]",
-  relics: "(*)",
-  followers: "^^",
-  influence: "**"
+  coin: "🪙",
+  supplies: "📦",
+  relics: "🔮",
+  followers: "🧑‍🤝‍🧑",
+  influence: "⭐"
 };
 
 const LOCATIONS = [
-  { id: "harbor", name: "Old Harbor", art: "~^~^~^~", action: { coin: 2 }, agents: 2 },
-  { id: "market", name: "Salt Market", art: "[=|=]=", action: { supplies: 2 }, agents: 2 },
-  { id: "vault", name: "Relic Vault", art: "(*)_", action: { relics: 1 }, agents: 1 },
-  { id: "tavern", name: "Gull & Anchor", art: "/\\_/\\", action: { followers: 2 }, agents: 2 },
-  { id: "quay", name: "North Quay", art: "==[]==", action: { coin: 1, supplies: 1 }, agents: 1 },
-  { id: "workshop", name: "Tinker Workshop", art: "<|>|", action: { build: true }, agents: 1 },
-  { id: "council", name: "Tide Council", art: "/===\\", action: { influence: 2, drawIntrigue: true }, agents: 1 }
+  { id: "harbor", name: "Old Harbor", art: "⚓ 🌊 ⚓", action: { coin: 2 }, agents: 2 },
+  { id: "market", name: "Salt Market", art: "🏪 🐟 🏪", action: { supplies: 2 }, agents: 2 },
+  { id: "vault", name: "Relic Vault", art: "🏛️ 🔮 🏛️", action: { relics: 1 }, agents: 1 },
+  { id: "tavern", name: "Gull & Anchor", art: "🍺 🐦 🍺", action: { followers: 2 }, agents: 2 },
+  { id: "quay", name: "North Quay", art: "🚢 📦 🚢", action: { coin: 1, supplies: 1 }, agents: 1 },
+  { id: "workshop", name: "Tinker Workshop", art: "🔧 ⚙️ 🔨", action: { build: true }, agents: 1 },
+  { id: "council", name: "Tide Council", art: "🏛️ ⚖️ 🏛️", action: { influence: 2, drawIntrigue: true }, agents: 1 }
 ];
 
 const BUILDINGS = [
@@ -48,6 +48,8 @@ const QUEST_TEMPLATES = [
   { name: "Commission a Tide Engine", cost: { coin: 6, relics: 1 }, reward: { followers: 2 }, vp: 11 }
 ];
 
+let questCounter = 0;
+
 function emptyResources() {
   return { coin: 0, supplies: 0, relics: 0, followers: 0, influence: 0 };
 }
@@ -67,8 +69,8 @@ function pay(player, cost) {
 function resourceText(resources) {
   return Object.entries(resources)
     .filter(([, value]) => value)
-    .map(([key, value]) => `${value} ${RESOURCE_ICONS[key]} ${key}`)
-    .join(", ") || "nothing";
+    .map(([key, value]) => `${RESOURCE_ICONS[key]} ${value} ${key}`)
+    .join("  ") || "nothing";
 }
 
 let state = null;
@@ -93,10 +95,11 @@ function newGame(playerName, aiCount) {
   players[0].resources = { coin: 4, supplies: 2, relics: 0, followers: 1, influence: 0 };
   players.slice(1).forEach(p => p.resources = { coin: 3, supplies: 2, relics: 0, followers: 1, influence: 0 });
 
+  questCounter = 0;
   state = {
     round: 1,
     turn: 0,
-    phase: "place",
+    phase: "play",
     players,
     locations: LOCATIONS.map(location => ({ ...location, occupied: [] })),
     buildings: [...BUILDINGS],
@@ -107,14 +110,14 @@ function newGame(playerName, aiCount) {
   players.forEach(p => {
     for (let i = 0; i < 2; i++) p.intrigue.push(state.intrigueDeck.pop());
   });
-  logMessage(`The voyage begins. Round 1: ${players[0].name} acts.`);
+  logMessage(`⛵ The voyage begins. Round 1: ${players[0].name} acts.`);
   saveGame();
   render();
 }
 
 function drawQuests(count) {
   const deck = shuffle([...QUEST_TEMPLATES]);
-  return deck.slice(0, count).map((quest, index) => ({ ...quest, id: `q${index}` }));
+  return deck.slice(0, count).map(quest => ({ ...quest, id: `q${questCounter++}` }));
 }
 
 function shuffle(items) {
@@ -149,11 +152,7 @@ function placeAgent(locationId) {
 
 function applyLocation(player, location) {
   const action = location.action;
-  if (action.build) {
-    render();
-    return;
-  }
-  gain(player, action);
+  if (!action.build) gain(player, action);
   if (action.drawIntrigue && state.intrigueDeck.length) {
     player.intrigue.push(state.intrigueDeck.pop());
   }
@@ -230,7 +229,7 @@ function endRound() {
   }
   state.round++;
   state.turn = 0;
-  logMessage(`Round ${state.round} begins.`);
+  logMessage(`🌅 Round ${state.round} begins.`);
   saveGame();
   render();
 }
@@ -297,15 +296,15 @@ function render() {
   if (state.phase === "over") {
     const ranked = [...state.players].sort((a, b) => b.score - a.score);
     document.getElementById("final-scores").innerHTML = ranked.map((player, index) =>
-      `<div class="player-row ${index === 0 ? "current" : ""}">${index + 1}. ${player.name} — ${player.score} influence</div>`
+      `<div class="player-row ${index === 0 ? "current" : ""}">${index === 0 ? "🏆" : "⚓"} ${index + 1}. ${player.name} — ${player.score} influence</div>`
     ).join("");
     return;
   }
 
   const player = currentPlayer();
   document.getElementById("status-bar").innerHTML = `
-    <strong>Round ${state.round}/${ROUNDS}</strong> — <span class="current">${player.name}</span>
-    ${player.ai ? "(AI)" : ""} — Agents: ${player.agents - player.agentsUsed}/${player.agents}
+    <strong>🌊 Round ${state.round}/${ROUNDS}</strong> — <span class="current">${player.name}</span>
+    ${player.ai ? "🤖" : "🧑‍✈️"} — Agents: ${"🧍".repeat(player.agents - player.agentsUsed)}${"💤".repeat(player.agentsUsed)}
   `;
 
   document.getElementById("locations").innerHTML = state.locations.map(location => {
@@ -315,36 +314,36 @@ function render() {
       <div class="location ${open ? "available" : "taken"}">
         <strong>${location.name}</strong> <span class="small">(${location.occupied.length}/${location.agents})</span>
         <pre>${location.art}</pre>
-        <div class="reward">Gives: ${location.action.build ? "Build a structure" : resourceText(location.action)}${location.action.drawIntrigue ? " + Order" : ""}</div>
+        <div class="reward">Gives: ${location.action.build ? "🏗️ Build a structure" : resourceText(location.action)}${location.action.drawIntrigue ? " + 🗂️ Order" : ""}</div>
         <div>${location.occupied.map(id => `<span class="agent-chip">${state.players[id].name}</span>`).join("")}</div>
-        <button data-location="${location.id}" ${usable ? "" : "disabled"}>Place agent</button>
+        <button data-location="${location.id}" ${usable ? "" : "disabled"}>🧍 Place agent</button>
       </div>`;
   }).join("");
 
   document.getElementById("player-area").innerHTML = `
     <div class="player-row current">${player.name}</div>
     <div>${resourceText(player.resources)}</div>
-    <div class="small">Buildings: ${player.buildings.map(id => BUILDINGS.find(b => b.id === id).name).join(", ") || "none"}</div>
-    <div class="small">Score: ${player.score}</div>
+    <div class="small">🏗️ Buildings: ${player.buildings.map(id => BUILDINGS.find(b => b.id === id).name).join(", ") || "none"}</div>
+    <div class="small">⭐ Score: ${player.score}</div>
     ${state.buildings.map(building => `
       <div class="building">
         <strong>${building.name}</strong> — <span class="cost">${resourceText(building.cost)}</span><br>
         <span class="small">${building.effect} • ${building.vp} VP</span><br>
-        <button data-build="${building.id}" ${canAfford(player, building.cost) && !player.ai ? "" : "disabled"}>Build</button>
+        <button data-build="${building.id}" ${canAfford(player, building.cost) && !player.ai ? "" : "disabled"}>🏗️ Build</button>
       </div>`).join("")}
   `;
 
   document.getElementById("quests").innerHTML = state.quests.map(quest => `
     <div class="quest">
-      <strong>${quest.name}</strong><br>
+      <strong>📜 ${quest.name}</strong><br>
       <span class="cost">Cost: ${resourceText(quest.cost)}</span><br>
       <span class="reward">Reward: ${resourceText(quest.reward)} • ${quest.vp} influence</span><br>
-      <button data-quest="${quest.id}" ${canAfford(player, quest.cost) && !player.ai ? "" : "disabled"}>Complete</button>
+      <button data-quest="${quest.id}" ${canAfford(player, quest.cost) && !player.ai ? "" : "disabled"}>✅ Complete</button>
     </div>`).join("");
 
   document.getElementById("intrigue").innerHTML = player.intrigue.map(id => {
     const card = INTRIGUE.find(item => item.id === id);
-    return `<div class="intrigue"><strong>${card.name}</strong><br><span class="small">${card.text}</span><br><button data-intrigue="${card.id}" ${player.ai ? "disabled" : ""}>Play</button></div>`;
+    return `<div class="intrigue"><strong>🗂️ ${card.name}</strong><br><span class="small">${card.text}</span><br><button data-intrigue="${card.id}" ${player.ai ? "disabled" : ""}>▶️ Play</button></div>`;
   }).join("") || '<p class="small">No orders in hand.</p>';
 
   document.getElementById("log").innerHTML = state.log.map(entry => `<div>${entry}</div>`).join("");
@@ -365,7 +364,7 @@ document.getElementById("start-game").addEventListener("click", () => {
 document.getElementById("continue-game").addEventListener("click", loadGame);
 document.getElementById("save-game").addEventListener("click", () => {
   saveGame();
-  alert("Voyage saved.");
+  alert("💾 Voyage saved.");
 });
 document.getElementById("new-game").addEventListener("click", () => {
   if (confirm("Abandon this voyage and return to setup?")) {
