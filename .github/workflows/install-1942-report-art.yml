@@ -1,4 +1,4 @@
-name: Install 1942 Report ASCII-art font and distress map
+name: Install Harting art and distress map
 on:
   push:
     branches: [main]
@@ -13,74 +13,66 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Download font and update ASCII art
+      - name: Install Harting and update map
         shell: python
         run: |
-          import html, io, re, zipfile
-          from html.parser import HTMLParser
+          import io, re, zipfile
           from pathlib import Path
+          from html.parser import HTMLParser
           from urllib.parse import urljoin, urlparse
           from urllib.request import Request, urlopen
-          source = 'https://www.1001fonts.com/1942-report-font.html'
+          source = 'https://www.dafont.com/harting.font'
           def fetch(url):
-              with urlopen(Request(url, headers={'User-Agent': 'Mozilla/5.0 Watershallow font installer'}), timeout=60) as response:
-                  data = response.read(10_000_001)
-              if len(data) > 10_000_000:
-                  raise RuntimeError('Download exceeds size limit')
+              with urlopen(Request(url, headers={'User-Agent':'Mozilla/5.0'}), timeout=60) as r:
+                  data = r.read(10000001)
+              if len(data)>10000000: raise RuntimeError('Download too large')
               return data
           class Links(HTMLParser):
               def __init__(self):
                   super().__init__()
-                  self.urls = []
+                  self.urls=[]
               def handle_starttag(self, tag, attrs):
-                  if tag == 'a':
-                      url = urljoin(source, html.unescape(dict(attrs).get('href', '')))
-                      if urlparse(url).hostname == 'dl.1001fonts.com':
-                          self.urls.append(url)
-          links = Links()
-          links.feed(fetch(source).decode('utf-8', errors='replace'))
-          if not links.urls:
-              raise RuntimeError('No 1001 Fonts archive link found; no files changed')
-          archive = zipfile.ZipFile(io.BytesIO(fetch(links.urls[0])))
-          candidates = [x for x in archive.infolist() if not x.is_dir() and Path(x.filename).suffix.lower() == '.ttf' and x.file_size < 5_000_000]
-          if len(candidates) != 1:
-              raise RuntimeError('Expected exactly one TTF')
-          font = archive.read(candidates[0])
-          if font[:4] not in (b'\x00\x01\x00\x00', b'OTTO', b'true'):
-              raise RuntimeError('Invalid font signature')
-          page = Path('index.html')
-          content = page.read_text(encoding='utf-8')
-          if '</head>' not in content:
-              raise RuntimeError('Page head not found')
-          css = "@font-face{font-family:'1942Report';src:url('./fonts/1942-report/1942-report.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}\n#terrain,.building-art,.sidebar-art,.compass{font-family:'1942Report','Courier New',monospace!important;font-weight:400!important;font-synthesis:none}\n"
-          content = re.sub(r'<style id="ascii-art-font">.*?</style>', '', content, flags=re.S)
-          content = content.replace('</head>', '<style id="ascii-art-font">' + css + '</style></head>', 1)
-          page.write_text(content, encoding='utf-8')
-          script = Path('watershallow.js')
-          code = script.read_text(encoding='utf-8')
-          sea_pattern = r'<div class="sea-name"[^>]*>~ SHALLOW SEA ~.*?</div>'
-          sea_replacement = '<div class="sea-name" aria-hidden="true">~ SHALLOW SEA ~<br> ⛵ <br>  🐟<br>⚓  <br> 🚢 </div>'
-          code, sea_count = re.subn(sea_pattern, sea_replacement, code, count=1, flags=re.S)
-          if sea_count != 1:
-              raise RuntimeError('Expected sea emoji block not found')
-          road_pattern = re.compile(r"chars\[y\]\[x\]=sea\?'[^']*'\[\(\(x\*3\+y\*5\)%11\)\]:forest\?'[^']*'\[\(\(x\+y\*3\)%9\)\]:road\?\(Math\.abs\(v-\.76\)<\.012\?'[^']*':'[^']*'\):'[^']*'\[\(x%11\+y%6\)%11\]\|\|' '")
-          road_replacement = r"chars[y][x]=sea?' ~~~  ~  ~ '[((x*3+y*5)%11)]:forest?' ^ A ^ | '[((x+y*3)%9)]:road?(Math.abs(v-.76)<.012?'=-~=-.=-~='[((x*7+y*3)%12)]:' .-~.-~. '[((x*5+y*7)%11)]):' /\\__|[]_ '[(x%11+y%6)%11]||' '"
-          code, road_count = road_pattern.subn(road_replacement, code, count=1)
-          if road_count != 1:
-              raise RuntimeError('Expected road renderer not found')
-          script.write_text(code, encoding='utf-8')
-          target = Path('fonts/1942-report')
-          target.mkdir(parents=True, exist_ok=True)
-          (target / '1942-report.ttf').write_bytes(font)
-          notices = [x for x in archive.infolist() if not x.is_dir() and x.file_size < 200_000 and (Path(x.filename).suffix.lower() in ('.txt', '.md') or Path(x.filename).name.lower() in ('ofl', 'license', 'licence', 'copying'))]
-          for i, notice in enumerate(notices):
-              (target / ('upstream-' + str(i) + '-' + Path(notice.filename).name)).write_bytes(archive.read(notice))
-          (target / 'SOURCE.md').write_text('1942 report by Johan Holmdahl.\nSource: ' + source + '\n1001 Fonts lists the font as free for personal and commercial use, with custom terms in the archive. Preserve upstream notices. The game MIT licence does not relicense this font. This source note is not a substitute for font licence terms.\n', encoding='utf-8')
-      - name: Commit map and font changes
+                  if tag=='a':
+                      url=urljoin(source,dict(attrs).get('href',''))
+                      if urlparse(url).hostname=='dl.dafont.com': self.urls.append(url)
+          links=Links()
+          links.feed(fetch(source).decode('utf-8',errors='replace'))
+          if not links.urls: raise RuntimeError('No DaFont download link found')
+          archive=zipfile.ZipFile(io.BytesIO(fetch(links.urls[0])))
+          matches=[x for x in archive.infolist() if Path(x.filename).name.lower()=='harting.ttf' and x.file_size<5000000]
+          if len(matches)!=1: raise RuntimeError('Expected Harting.ttf')
+          font=archive.read(matches[0])
+          if font[:4] not in (bytes([0,1,0,0]),b'OTTO',b'true'): raise RuntimeError('Invalid font')
+          page=Path('index.html')
+          content=page.read_text()
+          if '</head>' not in content: raise RuntimeError('Missing head')
+          css="@font-face{font-family:'Harting';src:url('./fonts/harting/Harting.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}pre,#terrain,.building-art,.sidebar-art,.menu pre,.compass{font-family:'Harting','Courier New',monospace!important;font-weight:400!important;font-synthesis:none;font-variant-ligatures:none;letter-spacing:0}"
+          content=re.sub(r'<style id="ascii-art-font">.*?</style>','',content,flags=re.S)
+          content=content.replace('</head>','<style id="ascii-art-font">'+css+'</style></head>',1)
+          script=Path('watershallow.js')
+          code=script.read_text()
+          code,n=re.subn(r'<div class="sea-name"[^>]*>.*?</div>',lambda m:m[0].replace('🌊',''),code,count=1,flags=re.S)
+          if n!=1: raise RuntimeError('Sea block not found')
+          old="road?(Math.abs(v-.76)<.012?'=':'.')"
+          new="road?(Math.abs(v-.76)<.012?'=- ~-.= -~'[(x*7+y*3)%10]:' .-~.  .- '[(x*5+y*7)%10])"
+          if old in code: code=code.replace(old,new,1)
+          elif new not in code: raise RuntimeError('Road expression not found')
+          target=Path('fonts/harting')
+          target.mkdir(parents=True,exist_ok=True)
+          (target/'Harting.ttf').write_bytes(font)
+          for i,item in enumerate(archive.infolist()):
+              if not item.is_dir() and item.file_size<200000 and (Path(item.filename).suffix.lower() in ('.txt','.md') or Path(item.filename).name.lower() in ('license','licence','copying','ofl')):
+                  (target/('upstream-'+str(i)+'-'+Path(item.filename).name)).write_bytes(archive.read(item))
+          (target/'SOURCE.md').write_text('Harting by David Rakowski. Source: '+source+'. Preserve bundled notices; the game licence does not relicense this font.')
+          page.write_text(content)
+          script.write_text(code)
+      - name: Validate JavaScript
+        run: node --check watershallow.js
+      - name: Commit installation
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add fonts/1942-report index.html watershallow.js
+          git add fonts/harting index.html watershallow.js
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Use 1942 Report art, remove sea emoji, distress roads'
+          git commit -m 'Use Harting ASCII art, remove sea wave emoji and distress roads'
           git push origin HEAD:main
