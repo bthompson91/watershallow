@@ -27,3 +27,5 @@ Active files: `index.html`, `atlas.css`, `watershallow.js`, `emoji-atlas.js`, `c
 Run `node tests/combat.cjs` for combat checks. Repository validation checks JavaScript syntax and local assets. Syntax/unit checks are not browser tests or deployment verification. A committed change is not proof of the revision currently served by GitHub Pages.
 
 Game code: MIT (`LICENSE`). Font assets retain their upstream terms and notices.
+
+Constructed buildings are placed directly within the main map, without a separate South Quay section. The map bounds expand and the entire map scales to fit as buildings are added. Recruitment Orders show the current round reward explicitly; reward mechanics are unchanged.

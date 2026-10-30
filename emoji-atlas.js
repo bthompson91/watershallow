@@ -43,7 +43,7 @@
     return html;
   };
   paint=function(){
-    const el=$('terrain'),world=$('world');if(!el||!world)return;
+    const el=$('terrain'),world=document.querySelector('#world>.city-core')||$('world');if(!el||!world)return;
     const cols=Math.ceil(world.clientWidth/3.62),rows=Math.ceil(world.clientHeight/7);if(!cols||!rows)return;
     let out='';
     for(let y=0;y<rows;y++){let run='',last='';
