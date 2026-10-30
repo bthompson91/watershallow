@@ -1,2 +1,19 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kings of Watershallow</title><link rel="stylesheet" href="atlas.css"></head><body><div id="app"></div><p id="storage" class="warn" role="status"></p><script src="watershallow.js"></script><script src="emoji-atlas.js"></script></body></html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kings of Watershallow</title><link rel="stylesheet" href="atlas.css"><style>
+body button:not(:disabled){background:#493321!important;color:#fff4d6!important;border:1px solid #493321!important;border-bottom:2px solid #291c12!important;opacity:1;font-weight:bold}
+body button:not(:disabled):hover{background:#694b2d!important;color:#fffbea!important;outline:2px solid #b38646;outline-offset:1px}
+body button:disabled{background:#e6d9bc!important;color:#796d57!important;border:1px dashed #a8997c!important;opacity:1;font-weight:normal;cursor:not-allowed}
+body button.occupied:disabled{background:#dfc2a3!important;color:#614534!important;border:1px solid #ac8867!important}
+body button:focus-visible{outline:3px solid #176c84!important;outline-offset:2px}
+.hand .scroll{overflow-y:auto;scrollbar-gutter:stable;min-height:0}
+.hand .card h3{font-size:12px;margin:0 0 5px}
+.hand .card p{margin:6px 0}
+</style></head><body><div id="app"></div><p id="storage" class="warn" role="status"></p><script src="watershallow.js"></script><script src="emoji-atlas.js"></script><script>
+/* Display-only changes: stable location IDs, rules and saves are unchanged. */
+LOC.forEach(location=>{location[1]=location[1].replace(/^\d+\s*·\s*/, '');});
+function expandHandCard(html){return html.replace('<details class="card">','<article class="card">').replace('<summary>','<h3>').replace('</summary>','</h3>').replace('</details>','</article>');}
+const collapsibleCommission=commission,collapsibleOrder=orderCard;
+commission=function(...args){return expandHandCard(collapsibleCommission(...args));};
+orderCard=function(...args){return expandHandCard(collapsibleOrder(...args));};
+render();
+</script></body></html>
