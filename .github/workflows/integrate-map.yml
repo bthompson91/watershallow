@@ -1,0 +1,52 @@
+name: Integrate constructed buildings into map
+on:
+  push:
+    branches: [main]
+    paths: ['map-fit.js', 'order-rewards.js', '.github/workflows/integrate-map.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Check scripts
+        run: |
+          node --check map-fit.js
+          node --check order-rewards.js
+          node tests/combat.cjs
+      - name: Load explicit rewards and measure terrain against city core
+        shell: python
+        run: |
+          from pathlib import Path
+          page=Path('index.html')
+          text=page.read_text(encoding='utf-8')
+          if '</body>' not in text: raise RuntimeError('Missing body')
+          tag='<script src="order-rewards.js"></script>'
+          if tag not in text: text=text.replace('</body>',tag+'</body>',1)
+          page.write_text(text,encoding='utf-8')
+          atlas=Path('emoji-atlas.js')
+          text=atlas.read_text(encoding='utf-8')
+          old="const el=$('terrain'),world=$('world');"
+          new="const el=$('terrain'),world=document.querySelector('#world>.city-core')||$('world');"
+          if old in text: text=text.replace(old,new,1)
+          elif new not in text: raise RuntimeError('Terrain sizing anchor missing')
+          atlas.write_text(text,encoding='utf-8')
+          readme=Path('README.md')
+          text=readme.read_text(encoding='utf-8')
+          note='\nConstructed buildings are placed directly within the main map, without a separate South Quay section. The map bounds expand and the entire map scales to fit as buildings are added. Recruitment Orders show the current round reward explicitly; reward mechanics are unchanged.\n'
+          if note.strip() not in text: text+=note
+          readme.write_text(text,encoding='utf-8')
+      - name: Check atlas
+        run: node --check emoji-atlas.js
+      - name: Commit integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html emoji-atlas.js README.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Load explicit recruitment rewards and integrate map terrain sizing'
+          git push origin HEAD:main
