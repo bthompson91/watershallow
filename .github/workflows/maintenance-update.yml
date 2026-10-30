@@ -1,0 +1,56 @@
+name: Repository maintenance
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/maintenance-update.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Validate changed scripts and combat
+        run: |
+          node --check combat.js
+          node --check player-colours.js
+          node --check map-fit.js
+          node tests/combat.cjs
+      - name: Remove obsolete references and files
+        shell: python
+        run: |
+          import re,shutil
+          from pathlib import Path
+          page=Path('index.html')
+          text=page.read_text(encoding='utf-8')
+          text=re.sub(r'<style id="lt-cushion-font">.*?</style>','',text,flags=re.S)
+          text=re.sub(r"@font-face\{font-family:'Subway';[^}]*\}\s*",'',text)
+          text=text.replace("h1,h2,h3,.brand,.quay-title,.map-caption{font-family:'Subway',Georgia,serif!important;font-weight:400!important;font-synthesis:none}",'')
+          text=re.sub(r'<script data-(?:lt-cushion|dampfplatz)-fit>.*?</script>','',text,flags=re.S)
+          for name in ['game.js','style.css']:
+              if re.search(r'(?:src|href)=[\"\x27]'+re.escape(name),text): raise RuntimeError('Legacy file still referenced: '+name)
+              Path(name).unlink(missing_ok=True)
+          for name in ['subway','lt-cushion','dampfplatz']:
+              if 'fonts/'+name+'/' in text: raise RuntimeError('Old font still referenced: '+name)
+              path=Path('fonts')/name
+              if path.exists(): shutil.rmtree(path)
+          obsolete=['install-1942-report-art.yml','install-antraxja-goth.yml','install-combat.yml','install-dampfplatz.yml','install-expansion.yml','install-juliametal.yml','install-lt-cushion.yml','install-map-fit.yml','install-name-pools.yml','install-subway-font.yml','remove-creatures.yml']
+          for name in obsolete: (Path('.github/workflows')/name).unlink(missing_ok=True)
+          page.write_text(text,encoding='utf-8')
+          css=Path('atlas.css')
+          css.write_text(css.read_text(encoding='utf-8').replace('explicit Subway heading rules remain intact','explicit heading rules remain intact'),encoding='utf-8')
+          for url in re.findall(r'''url\(\s*['"]?([^'"\)\s]+)''',text):
+              if not url.startswith(('https:','http:','data:')): assert Path(url).is_file(),url
+      - name: Check all remaining JavaScript
+        run: find . -path './.git' -prune -o -name '*.js' -type f -exec node --check {} \;
+      - name: Commit cleanup
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Remove unused legacy files, installers and superseded fonts'
+          git push origin HEAD:main
