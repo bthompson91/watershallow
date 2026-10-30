@@ -13,8 +13,8 @@
     .sea-name,.treeline{display:none}.scenery,.roads,.map-caption{position:absolute;inset:0;pointer-events:none;user-select:none}
     .scenery{z-index:0;overflow:hidden}.scenery span{position:absolute;transform:translate(-50%,-50%);font-size:clamp(13px,2.6cqh,27px);line-height:1;filter:saturate(.85)}
     .scenery span.wave{opacity:.68;font-size:clamp(14px,3.1cqh,32px)}.scenery span.house{font-size:clamp(11px,2.1cqh,23px)}
-    .roads{width:100%;height:100%;z-index:0}.roads .road-edge{fill:none;stroke:#a48858;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
-    .roads .road-fill{fill:none;stroke:#f5e6b8;stroke-width:.65;stroke-linecap:round;stroke-linejoin:round}
+    .roads{width:100%;height:100%;z-index:0}.roads .road-edge{fill:none;stroke:#a48858;stroke-width:1.1;stroke-dasharray:1.8 .45 .6 .3 2.1 .6;opacity:.75;stroke-linecap:round;stroke-linejoin:round}
+    .roads .road-fill{fill:none;stroke:#f5e6b8;stroke-width:.65;stroke-dasharray:2.3 .3 .7 .4 1.4 .5;opacity:.85;stroke-linecap:round;stroke-linejoin:round}
     .roads .dock{stroke:#775b37;stroke-width:.4;fill:none}.map-caption{inset:auto;z-index:1;font-size:clamp(9px,.7vw,13px);font-weight:bold;letter-spacing:1px;color:#244d61;text-shadow:0 1px #e8dfb1}
     .quay-title{top:84%;z-index:3}.quay{top:88%;z-index:3;background:#e4cda299}.plot{background:#efdab2ed}
     @media(min-width:1101px) and (max-height:650px){.landmark .building-art{display:none}.landmark-icon{font-size:19px}.landmark{max-height:24%}.quay-title{top:84%}.quay{top:88%}}
@@ -25,7 +25,7 @@
     let out='',seed=73019;
     const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
     const put=(x,y,e,c='')=>{out+=`<span class="${c}" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%">${e}</span>`};
-    for(let i=0;i<145;i++){const y=3+rnd()*94,x=1+rnd()*(17+3*Math.sin(y/12));put(x,y,i%17===0?'🐟':i%29===0?'🐚':'🌊','wave')}
+    for(let i=0;i<145;i++){const y=3+rnd()*94,x=1+rnd()*(17+3*Math.sin(y/12));put(x,y,i%17===0?'🐟':i%29===0?'🐚':'~','wave')}
     [[7,18,'⛵'],[13,43,'🚢'],[5,69,'⛵'],[17,79,'⚓'],[12,89,'🛶']].forEach(a=>put(...a));
     for(let i=0;i<85;i++){let x,y;if(i<60){x=24+rnd()*74;y=1+rnd()*5}else{x=96+rnd()*3;y=6+rnd()*75}put(x,y,i%5===0?'🌳':'🌲')}
     const near=(x,y)=>Object.values(POS).some(([a,b])=>Math.abs(x-a)<12&&y>b-7&&y<b+15);
