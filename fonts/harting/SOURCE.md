@@ -1,0 +1,1 @@
+Harting by David Rakowski. Source: https://www.dafont.com/harting.font. Preserve bundled notices; the game licence does not relicense this font.

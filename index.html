@@ -34,7 +34,7 @@ pre,#terrain,.building-art,.sidebar-art,.menu pre,.compass{font-family:'Courier 
 pre,#terrain,.building-art,.sidebar-art,.menu pre,.compass{font-family:'JuliaMetal','Courier New',monospace!important;font-weight:400!important;font-variant-ligatures:none;letter-spacing:0}
 </style><style id="dampfplatz-font">@font-face{font-family:'DampfPlatz';src:url('./fonts/dampfplatz/DampfPlatz.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
 h1,h2,h3,.brand,.quay-title,.map-caption{font-family:'DampfPlatz',Georgia,serif!important;font-weight:400!important;font-synthesis:none}
-</style></head><body><div id="app"></div><p id="storage" class="warn" role="status"></p><script src="watershallow.js"></script><script src="emoji-atlas.js"></script><script>
+</style><style id="ascii-art-font">@font-face{font-family:'Harting';src:url('./fonts/harting/Harting.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}pre,#terrain,.building-art,.sidebar-art,.menu pre,.compass{font-family:'Harting','Courier New',monospace!important;font-weight:400!important;font-synthesis:none;font-variant-ligatures:none;letter-spacing:0}</style></head><body><div id="app"></div><p id="storage" class="warn" role="status"></p><script src="watershallow.js"></script><script src="emoji-atlas.js"></script><script>
 /* Display-only changes: stable location IDs, rules and saves are unchanged. */
 LOC.forEach(location=>{location[1]=location[1].replace(/^\d+\s*·\s*/, '');});
 function expandHandCard(html){return html.replace('<details class="card">','<article class="card">').replace('<summary>','<h3>').replace('</summary>','</h3>').replace('</details>','</article>');}
