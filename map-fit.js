@@ -23,3 +23,4 @@ render=function(){
 };
 window.addEventListener('resize',schedule);window.visualViewport?.addEventListener('resize',schedule);if(document.fonts){document.fonts.ready.then(schedule);document.fonts.addEventListener('loadingdone',schedule);}render();
 })();
+(()=>{const script=document.createElement('script');script.src=new URL('boss-mode.js',document.currentScript.src).href;document.head.appendChild(script);})();
