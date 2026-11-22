@@ -36,11 +36,12 @@ orderCard=function(...args){return expandHandCard(collapsibleOrder(...args));};
 function fitHands(){
   const hand=document.querySelector('.hand');if(!hand)return;
   const panels=[...hand.querySelectorAll(':scope>.stack')];if(!panels.length)return;
-  const style=getComputedStyle(hand),gap=parseFloat(style.rowGap)||0;
-  const available=Math.max(0,hand.clientHeight-(parseFloat(style.paddingTop)||0)-(parseFloat(style.paddingBottom)||0)-gap*(panels.length-1));
+  const style=getComputedStyle(hand),gap=parseFloat(style.rowGap)||0,cols=style.gridTemplateColumns.split(' ').filter(Boolean).length;
+  const available=Math.max(0,hand.clientHeight-(parseFloat(style.paddingTop)||0)-(parseFloat(style.paddingBottom)||0)-gap*(cols>1?0:panels.length-1));
   const desired=panels.map(panel=>{const heading=panel.querySelector('h2'),list=panel.querySelector('.scroll'),hs=getComputedStyle(heading);return Math.ceil(heading.getBoundingClientRect().height+(parseFloat(hs.marginTop)||0)+(parseFloat(hs.marginBottom)||0)+list.scrollHeight+2);});
   let heights=desired;
-  if(desired.reduce((a,b)=>a+b,0)>available){
+  if(cols>1){heights=desired.map(d=>Math.min(d,available));}
+  else if(desired.reduce((a,b)=>a+b,0)>available){
     const floor=Math.min(100,available/panels.length),base=desired.map(d=>Math.min(d,floor));
     const remaining=Math.max(0,available-base.reduce((a,b)=>a+b,0)),need=desired.map((d,i)=>Math.max(0,d-base[i])),total=need.reduce((a,b)=>a+b,0);
     heights=base.map((v,i)=>v+(total?remaining*need[i]/total:0));
