@@ -12,7 +12,7 @@ The creature/HP/mana system is removed. Existing saved battle results retain the
 
 ## Interface
 
-Unique red, green, blue, black and white player colours match sidebar rows and occupied worker buttons. Dice colour only their ASCII characters. AI-only battles continue automatically after the animation. The mobile resource header stays sticky. The map and constructed district share a measured fit-to-space canvas with no district scrollbar. Sea marks are sparse and blue; roads use rough SVG texture. Small-screen fitting may shrink labels and touch targets.
+Unique red, green, blue, black and white player colours match sidebar rows and occupied worker buttons. Dice colour only their ASCII characters. AI-only battles continue automatically after the animation. The mobile resource header stays sticky. The map and constructed district share a measured fit-to-space canvas with no district scrollbar. Sea marks are sparse and blue; roads use rough SVG texture. On phones the layout stacks board, hand, then rivals, the map fits without horizontal scrolling, and buttons are 36-44px tall. ASCII terrain renders at 3px (was 6px) and building art at 3-4px (was 6-8px), so the map is about four times as dense and the building art stays visible on small screens instead of hiding.
 
 Antraxja Goth headings, JuliaMetal ordinary text, Harting ASCII art; dice use Courier New for alignment. Name pools: 60 rivals, 40 commissions, 30 Orders and 30 buildings. Decks remain 60/50/18 cards; names repeat after their pool is exhausted. Existing voyages retain their stored names. These are name variants, not new effects.
 

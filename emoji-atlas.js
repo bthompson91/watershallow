@@ -7,7 +7,7 @@
   style.textContent=`
     .world{background:#ddc58d}.landmark{width:20%;max-height:23%;z-index:2;background:radial-gradient(ellipse,#f4e3baf7 30%,#ecd6a6d9 60%,transparent 77%)}
     .landmark-icon{font-size:clamp(16px,2.8cqh,30px);line-height:1.05;white-space:nowrap}
-    .landmark .building-art{font-size:clamp(6px,.9cqh,8px);line-height:1;max-height:36px;overflow:hidden}
+    .landmark .building-art{font-size:clamp(3px,.45cqh,4px);line-height:1;max-height:18px;overflow:hidden}
     .landmark h3{font-size:clamp(10px,.78vw,14px)}.landmark .reward{font-size:clamp(9px,.65vw,11px)}
     .landmark .spaces{gap:2px}.landmark .spaces button{font-size:clamp(10px,.65vw,11px);padding:3px 4px}
     .sea-name,.treeline{display:none}.scenery,.roads,.map-caption{position:absolute;inset:0;pointer-events:none;user-select:none}
@@ -17,8 +17,8 @@
     .roads .road-fill{fill:none;stroke:#f5e6b8;stroke-width:.65;stroke-dasharray:2.3 .3 .7 .4 1.4 .5;opacity:.85;stroke-dasharray:2.3 .3 .7 .4 1.4 .5;opacity:.85;stroke-linecap:round;stroke-linejoin:round}
     .roads .dock{stroke:#775b37;stroke-width:.4;fill:none}.map-caption{inset:auto;z-index:1;font-size:clamp(9px,.7vw,13px);font-weight:bold;letter-spacing:1px;color:#244d61;text-shadow:0 1px #e8dfb1}
     .quay-title{top:84%;z-index:3}.quay{top:88%;z-index:3;background:#e4cda299}.plot{background:#efdab2ed}
-    @media(min-width:1101px) and (max-height:650px){.landmark .building-art{display:none}.landmark-icon{font-size:19px}.landmark{max-height:24%}.quay-title{top:84%}.quay{top:88%}}
-    @media(max-width:1100px){.landmark .building-art{display:none}.landmark{max-height:23%}.landmark-icon{font-size:21px}.landmark .reward{font-size:10px}}
+    @media(min-width:1101px) and (max-height:650px){.landmark-icon{font-size:19px}.landmark{max-height:24%}.quay-title{top:84%}.quay{top:88%}}
+    @media(max-width:1100px){.landmark{max-height:23%}.landmark-icon{font-size:21px}.landmark .reward{font-size:10px}.landmark .building-art{font-size:3px;max-height:16px}}
   `;
   document.head.appendChild(style);
   function scatter(){
@@ -44,13 +44,13 @@
   };
   paint=function(){
     const el=$('terrain'),world=document.querySelector('#world>.city-core')||$('world');if(!el||!world)return;
-    const cols=Math.ceil(world.clientWidth/3.62),rows=Math.ceil(world.clientHeight/7);if(!cols||!rows)return;
+    const cols=Math.ceil(world.clientWidth/1.81),rows=Math.ceil(world.clientHeight/3.5);if(!cols||!rows)return;
     let out='';
     for(let y=0;y<rows;y++){let run='',last='';
       for(let x=0;x<cols;x++){const u=x/cols,v=y/rows,sea=u<.205+.025*Math.sin(v*14)||v>.965,forest=!sea&&(v<.075||u>.955),kind=sea?'water':forest?'forest':'town',pattern=sea?' ~                     ':forest?' ^ A ^ | ':' /\\__|[]_ ';
         if(kind!==last){if(run)out+=`<span class="${last}">${esc(run)}</span>`;run='';last=kind}run+=pattern[(x*3+y*5)%pattern.length];
       }out+=`<span class="${last}">${esc(run)}</span>\n`;
-    }el.style.fontSize='6px';el.style.lineHeight='7px';el.innerHTML=out;
+    }el.style.fontSize='3px';el.style.lineHeight='3.5px';el.innerHTML=out;
   };
   render();
 })();
